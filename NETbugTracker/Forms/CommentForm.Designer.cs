@@ -44,9 +44,9 @@
             //
             // btnSave
             //
-            btnSave.Location = new Point(15, 230);
+            btnSave.Location = new Point(245, 230);
             btnSave.Name = "btnSave";
-            btnSave.Size = new Size(140, 30);
+            btnSave.Size = new Size(105, 30);
             btnSave.TabIndex = 2;
             btnSave.Text = "Сохранить";
             btnSave.UseVisualStyleBackColor = true;
@@ -54,9 +54,9 @@
             //
             // btnCancel
             //
-            btnCancel.Location = new Point(325, 230);
+            btnCancel.Location = new Point(360, 230);
             btnCancel.Name = "btnCancel";
-            btnCancel.Size = new Size(140, 30);
+            btnCancel.Size = new Size(105, 30);
             btnCancel.TabIndex = 3;
             btnCancel.Text = "Отмена";
             btnCancel.UseVisualStyleBackColor = true;
@@ -67,6 +67,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(484, 280);
+            Font = new Font("Segoe UI", 9F);
             Controls.Add(btnCancel);
             Controls.Add(btnSave);
             Controls.Add(txtComment);

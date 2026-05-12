@@ -26,6 +26,18 @@ namespace NETbugTracker.Forms
             _currentUser = currentUser;
             _editingProject = null;
             this.Text = "Новый проект";
+            AcceptButton = btnSave;
+            CancelButton = btnCancel;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _context?.Dispose();
+                components?.Dispose();
+            }
+            base.Dispose(disposing);
         }
 
         // Конструктор для редактирования существующего проекта
