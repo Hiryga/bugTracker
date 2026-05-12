@@ -41,9 +41,10 @@ namespace NETbugTracker.Forms
         private void LoadRoles()
         {
             using var db = new AppDbContext();
-            cmbRole.DataSource = db.Roles.ToList();
+            cmbRole.DataSource = null;
             cmbRole.DisplayMember = "RoleName";
             cmbRole.ValueMember = "RoleId";
+            cmbRole.DataSource = db.Roles.OrderBy(r => r.RoleId).ToList();
         }
 
         private void btnSave_Click(object sender, EventArgs e)

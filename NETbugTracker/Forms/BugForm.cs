@@ -33,6 +33,8 @@ namespace NETbugTracker.Forms
             LoadComboBoxes();
             chkNoDueDate.Checked = true;
             dtpDueDate.Enabled = false;
+            AcceptButton = btnSave;
+            CancelButton = btnCancel;
         }
 
         // Конструктор для редактирования (с признаком роли)
@@ -53,9 +55,7 @@ namespace NETbugTracker.Forms
                 dtpDueDate.Enabled = true;
             }
 
-            LoadComboBoxes();
-
-            // Выбираем значения в ComboBox
+            // Выбираем значения в ComboBox (списки уже загружены в базовом конструкторе)
             cmbAssignedUser.SelectedValue = bug.AssignedUserId;
             cmbPriority.SelectedValue = bug.PriorityId;
             cmbStatus.SelectedValue = bug.StatusId;
@@ -82,20 +82,20 @@ namespace NETbugTracker.Forms
         {
             using (var db = new AppDbContext())
             {
-                // Загружаем исполнителей
-                cmbAssignedUser.DataSource = db.Users.ToList();
+                cmbAssignedUser.DataSource = null;
                 cmbAssignedUser.DisplayMember = "FullName";
                 cmbAssignedUser.ValueMember = "UserId";
+                cmbAssignedUser.DataSource = db.Users.OrderBy(u => u.FullName).ToList();
 
-                // Загружаем приоритеты
-                cmbPriority.DataSource = db.Priorities.ToList();
+                cmbPriority.DataSource = null;
                 cmbPriority.DisplayMember = "PriorityName";
                 cmbPriority.ValueMember = "PriorityId";
+                cmbPriority.DataSource = db.Priorities.OrderBy(p => p.PriorityId).ToList();
 
-                // Загружаем статусы
-                cmbStatus.DataSource = db.Statuses.ToList();
+                cmbStatus.DataSource = null;
                 cmbStatus.DisplayMember = "StatusName";
                 cmbStatus.ValueMember = "StatusId";
+                cmbStatus.DataSource = db.Statuses.OrderBy(s => s.StatusId).ToList();
             }
         }
 

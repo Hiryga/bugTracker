@@ -12,6 +12,7 @@ namespace NETbugTracker
         {
             InitializeComponent();
             AcceptButton = btnLogin;
+            CancelButton = btnCancel;
         }
 
         private void btnLogin_Click(object sender, EventArgs e)

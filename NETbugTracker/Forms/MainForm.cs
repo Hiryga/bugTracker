@@ -15,6 +15,9 @@ namespace NETbugTracker.Forms
         private bool IsDeveloper => _currentUser.RoleId == 2;
         private bool IsTester => _currentUser.RoleId == 3;
 
+        // Когда true, Program.cs снова покажет LoginForm после закрытия MainForm.
+        public bool LogoutRequested { get; private set; }
+
         private readonly User _currentUser;
         private List<Project> _projectsList = new List<Project>();
         private List<Bug> _bugsList = new List<Bug>();
@@ -223,7 +226,19 @@ namespace NETbugTracker.Forms
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            var confirm = MessageBox.Show(
+                "Выйти из аккаунта и вернуться на форму авторизации?",
+                "Выход", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (confirm != DialogResult.Yes) return;
+
+            try
+            {
+                ActivityLogger.Log(_currentUser.UserId, "Logout", "User", _currentUser.UserId);
+            }
+            catch { }
+
+            LogoutRequested = true;
+            this.Close();
         }
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)

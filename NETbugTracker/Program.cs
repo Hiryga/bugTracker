@@ -24,14 +24,24 @@ namespace NETbugTracker
                 return;
             }
 
-            var loginForm = new LoginForm();
-            if (loginForm.ShowDialog() != DialogResult.OK || loginForm.CurrentUser == null)
+            // Цикл: после выхода из аккаунта в MainForm возвращаемся
+            // к окну авторизации, не завершая процесс.
+            while (true)
             {
-                Application.Exit();
-                return;
-            }
+                using var loginForm = new LoginForm();
+                if (loginForm.ShowDialog() != DialogResult.OK || loginForm.CurrentUser == null)
+                {
+                    return;
+                }
 
-            Application.Run(new MainForm(loginForm.CurrentUser));
+                var mainForm = new MainForm(loginForm.CurrentUser);
+                Application.Run(mainForm);
+
+                if (!mainForm.LogoutRequested)
+                {
+                    return;
+                }
+            }
         }
     }
 }
