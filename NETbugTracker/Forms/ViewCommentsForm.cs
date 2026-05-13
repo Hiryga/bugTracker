@@ -47,6 +47,7 @@ namespace NETbugTracker.Forms
             dgvComments.DataSource = null;
             dgvComments.DataSource = view;
 
+<<<<<<< HEAD
             // Безопасная настройка колонок (с проверкой существования)
             if (dgvComments.Columns["CommentId"] != null)
             {
@@ -65,6 +66,19 @@ namespace NETbugTracker.Forms
             {
                 dgvComments.Columns["Текст"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
+=======
+            if (dgvComments.Columns["CommentId"] != null)
+            {
+                dgvComments.Columns["CommentId"].HeaderText = "ID";
+                dgvComments.Columns["CommentId"].Width = 60;
+            }
+            if (dgvComments.Columns["Автор"] != null)
+                dgvComments.Columns["Автор"].Width = 180;
+            if (dgvComments.Columns["Дата"] != null)
+                dgvComments.Columns["Дата"].Width = 140;
+            if (dgvComments.Columns["Текст"] != null)
+                dgvComments.Columns["Текст"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+>>>>>>> b8f2ddb196baeb74a2016175cdee6b5ef8f9368c
         }
 
         private Comment? GetSelectedComment()

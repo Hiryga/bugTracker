@@ -114,12 +114,20 @@ namespace NETbugTracker.Forms
             if (dgvReport.Columns["Count"] != null)
             {
                 dgvReport.Columns["Count"].HeaderText = "Количество";
+<<<<<<< HEAD
                 dgvReport.Columns["Count"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+=======
+                dgvReport.Columns["Count"].Width = 120;
+>>>>>>> b8f2ddb196baeb74a2016175cdee6b5ef8f9368c
             }
             if (dgvReport.Columns["Percent"] != null)
             {
                 dgvReport.Columns["Percent"].HeaderText = "Доля, %";
+<<<<<<< HEAD
                 dgvReport.Columns["Percent"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+=======
+                dgvReport.Columns["Percent"].Width = 100;
+>>>>>>> b8f2ddb196baeb74a2016175cdee6b5ef8f9368c
             }
 
             lblTotal.Text = $"Всего багов: {total}";

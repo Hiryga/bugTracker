@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NETbugTracker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cbafc3663947e428c45046874dda880624d4c9f7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7c888c6e709c8d6b8dc731469a1a27e0f32a309c")]
 [assembly: System.Reflection.AssemblyProductAttribute("NETbugTracker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NETbugTracker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
