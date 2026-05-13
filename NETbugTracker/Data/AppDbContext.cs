@@ -1,70 +1,81 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NETbugTracker.Entities;
 
 namespace NETbugTracker.Data
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<Role> Roles { get; set; }
-        public DbSet<Status> Statuses { get; set; }
-        public DbSet<Priority> Priorities { get; set; }
-        public DbSet<Project> Projects { get; set; }
-        public DbSet<Bug> Bugs { get; set; }
-        public DbSet<Comment> Comments { get; set; }
+        public DbSet<User> Users { get; set; } = null!;
+        public DbSet<Role> Roles { get; set; } = null!;
+        public DbSet<Status> Statuses { get; set; } = null!;
+        public DbSet<Priority> Priorities { get; set; } = null!;
+        public DbSet<Project> Projects { get; set; } = null!;
+        public DbSet<Bug> Bugs { get; set; } = null!;
+        public DbSet<Comment> Comments { get; set; } = null!;
+        public DbSet<ActivityLog> ActivityLogs { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=(localdb)\MSSQLLocalDB;Database=BugTrackerDB;Trusted_Connection=True;");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer(@"Server=(localdb)\MSSQLLocalDB;Database=BugTrackerDB;Trusted_Connection=True;");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // ========== НАСТРОЙКА ВНЕШНИХ КЛЮЧЕЙ ДЛЯ BUGS (БЕЗ КАСКАДНОГО УДАЛЕНИЯ) ==========
-            // Это должно быть ПЕРВЫМ, до HasData
-
-            // Связь с проектом - при удалении проекта удаляем баги (это нормально)
+            // ========== ВНЕШНИЕ КЛЮЧИ ДЛЯ BUGS ==========
             modelBuilder.Entity<Bug>()
                 .HasOne(b => b.Project)
                 .WithMany(p => p.Bugs)
                 .HasForeignKey(b => b.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Связь с автором - НЕ удаляем баги при удалении пользователя
             modelBuilder.Entity<Bug>()
                 .HasOne(b => b.AuthorUser)
                 .WithMany()
                 .HasForeignKey(b => b.AuthorUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Связь с исполнителем - НЕ удаляем баги при удалении пользователя
             modelBuilder.Entity<Bug>()
                 .HasOne(b => b.AssignedUser)
                 .WithMany()
                 .HasForeignKey(b => b.AssignedUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Связь со статусом - НЕ удаляем баги при удалении статуса
             modelBuilder.Entity<Bug>()
                 .HasOne(b => b.Status)
                 .WithMany()
                 .HasForeignKey(b => b.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Связь с приоритетом - НЕ удаляем баги при удалении приоритета
             modelBuilder.Entity<Bug>()
                 .HasOne(b => b.Priority)
                 .WithMany()
                 .HasForeignKey(b => b.PriorityId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ========== ЗАПОЛНЕНИЕ СПРАВОЧНИКОВ ==========
+            // ========== ВНЕШНИЕ КЛЮЧИ ДЛЯ COMMENTS ==========
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.Bug)
+                .WithMany(b => b.Comments)
+                .HasForeignKey(c => c.BugId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.AuthorUser)
+                .WithMany()
+                .HasForeignKey(c => c.AuthorUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ========== ВНЕШНИЕ КЛЮЧИ ДЛЯ ACTIVITYLOG ==========
+            modelBuilder.Entity<ActivityLog>()
+                .HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ========== СПРАВОЧНИКИ ==========
             modelBuilder.Entity<Role>().HasData(
                 new Role { RoleId = 1, RoleName = "Admin" },
                 new Role { RoleId = 2, RoleName = "Developer" },
@@ -85,29 +96,21 @@ namespace NETbugTracker.Data
                 new Priority { PriorityId = 4, PriorityName = "Critical" }
             );
 
+            // Пароль "admin123" в виде SHA-256 + Base64.
+            // Хэш предварительно вычислен, чтобы EF Core HasData оставался
+            // детерминированным (иначе миграция будет регенерироваться
+            // при каждом запуске).
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
                     UserId = 1,
                     Login = "admin",
-                    Password = "admin123",
+                    Password = "JAvlGPq9JyTdtvBO6x2llnRI1+gxwIyPqCKAn3THIKk=",
                     FullName = "Администратор",
                     Email = "admin@bugtracker.com",
                     RoleId = 1
                 }
             );
-
-            modelBuilder.Entity<Comment>()
-                .HasOne(c => c.Bug)
-                .WithMany()
-                .HasForeignKey(c => c.BugId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Comment>()
-                .HasOne(c => c.AuthorUser)
-                .WithMany()
-                .HasForeignKey(c => c.AuthorUserId)
-                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

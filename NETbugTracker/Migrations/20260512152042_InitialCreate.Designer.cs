@@ -12,8 +12,8 @@ using NETbugTracker.Data;
 namespace NETbugTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260512124048_AddBugsTable")]
-    partial class AddBugsTable
+    [Migration("20260512152042_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,45 @@ namespace NETbugTracker.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("NETbugTracker.Entities.ActivityLog", b =>
+                {
+                    b.Property<int>("LogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LogId"));
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LogId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ActivityLogs");
+                });
 
             modelBuilder.Entity("NETbugTracker.Entities.Bug", b =>
                 {
@@ -80,6 +119,36 @@ namespace NETbugTracker.Migrations
                     b.HasIndex("StatusId");
 
                     b.ToTable("Bugs");
+                });
+
+            modelBuilder.Entity("NETbugTracker.Entities.Comment", b =>
+                {
+                    b.Property<int>("CommentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentId"));
+
+                    b.Property<int>("AuthorUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BugId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CommentText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("CommentId");
+
+                    b.HasIndex("AuthorUserId");
+
+                    b.HasIndex("BugId");
+
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("NETbugTracker.Entities.Priority", b =>
@@ -265,9 +334,20 @@ namespace NETbugTracker.Migrations
                             Email = "admin@bugtracker.com",
                             FullName = "Администратор",
                             Login = "admin",
-                            Password = "admin123",
+                            Password = "JAvlGPq9JyTdtvBO6x2llnRI1+gxwIyPqCKAn3THIKk=",
                             RoleId = 1
                         });
+                });
+
+            modelBuilder.Entity("NETbugTracker.Entities.ActivityLog", b =>
+                {
+                    b.HasOne("NETbugTracker.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("NETbugTracker.Entities.Bug", b =>
@@ -275,23 +355,23 @@ namespace NETbugTracker.Migrations
                     b.HasOne("NETbugTracker.Entities.User", "AssignedUser")
                         .WithMany()
                         .HasForeignKey("AssignedUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("NETbugTracker.Entities.User", "AuthorUser")
                         .WithMany()
                         .HasForeignKey("AuthorUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("NETbugTracker.Entities.Priority", "Priority")
                         .WithMany()
                         .HasForeignKey("PriorityId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("NETbugTracker.Entities.Project", "Project")
-                        .WithMany()
+                        .WithMany("Bugs")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -299,7 +379,7 @@ namespace NETbugTracker.Migrations
                     b.HasOne("NETbugTracker.Entities.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("AssignedUser");
@@ -311,6 +391,25 @@ namespace NETbugTracker.Migrations
                     b.Navigation("Project");
 
                     b.Navigation("Status");
+                });
+
+            modelBuilder.Entity("NETbugTracker.Entities.Comment", b =>
+                {
+                    b.HasOne("NETbugTracker.Entities.User", "AuthorUser")
+                        .WithMany()
+                        .HasForeignKey("AuthorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NETbugTracker.Entities.Bug", "Bug")
+                        .WithMany("Comments")
+                        .HasForeignKey("BugId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AuthorUser");
+
+                    b.Navigation("Bug");
                 });
 
             modelBuilder.Entity("NETbugTracker.Entities.Project", b =>
@@ -333,6 +432,16 @@ namespace NETbugTracker.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("NETbugTracker.Entities.Bug", b =>
+                {
+                    b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("NETbugTracker.Entities.Project", b =>
+                {
+                    b.Navigation("Bugs");
                 });
 
             modelBuilder.Entity("NETbugTracker.Entities.Role", b =>

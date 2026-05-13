@@ -1,5 +1,6 @@
-using NETbugTracker.Data;
+﻿using NETbugTracker.Data;
 using NETbugTracker.Entities;
+using NETbugTracker.Services;
 
 namespace NETbugTracker
 {
@@ -10,33 +11,49 @@ namespace NETbugTracker
         public LoginForm()
         {
             InitializeComponent();
+            AcceptButton = btnLogin;
+            CancelButton = btnCancel;
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            string login = txtLogin.Text;
+            string login = txtLogin.Text.Trim();
             string password = txtPassword.Text;
 
-            using (var db = new AppDbContext())
+            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
             {
-                var user = db.Users.FirstOrDefault(u => u.Login == login && u.Password == password);
-
-                if (user != null)
-                {
-                    CurrentUser = user;
-                    this.DialogResult = DialogResult.OK;
-                    this.Close();
-                }
-                else
-                {
-                    MessageBox.Show("�������� ����� ��� ������", "������", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                MessageBox.Show("Введите логин и пароль", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
+
+            using var db = new AppDbContext();
+            var user = db.Users.FirstOrDefault(u => u.Login == login);
+
+            if (user == null || !PasswordHasher.VerifyPassword(password, user.Password))
+            {
+                MessageBox.Show("Неверный логин или пароль", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Если пароль ещё в открытом виде — перепишем на хэш.
+            if (!PasswordHasher.LooksHashed(user.Password))
+            {
+                user.Password = PasswordHasher.HashPassword(password);
+                db.SaveChanges();
+            }
+
+            ActivityLogger.Log(user.UserId, "Login", "User", user.UserId,
+                $"Вход в систему пользователя \"{user.Login}\"");
+
+            CurrentUser = user;
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
 
         private void LoginForm_Load(object sender, EventArgs e)
         {
-
         }
     }
 }

@@ -33,6 +33,8 @@ namespace NETbugTracker.Forms
             LoadComboBoxes();
             chkNoDueDate.Checked = true;
             dtpDueDate.Enabled = false;
+            AcceptButton = btnSave;
+            CancelButton = btnCancel;
         }
 
         // Конструктор для редактирования (с признаком роли)
@@ -53,9 +55,7 @@ namespace NETbugTracker.Forms
                 dtpDueDate.Enabled = true;
             }
 
-            LoadComboBoxes();
-
-            // Выбираем значения в ComboBox
+            // Выбираем значения в ComboBox (списки уже загружены в базовом конструкторе)
             cmbAssignedUser.SelectedValue = bug.AssignedUserId;
             cmbPriority.SelectedValue = bug.PriorityId;
             cmbStatus.SelectedValue = bug.StatusId;
@@ -82,20 +82,20 @@ namespace NETbugTracker.Forms
         {
             using (var db = new AppDbContext())
             {
-                // Загружаем исполнителей
-                cmbAssignedUser.DataSource = db.Users.ToList();
+                cmbAssignedUser.DataSource = null;
                 cmbAssignedUser.DisplayMember = "FullName";
                 cmbAssignedUser.ValueMember = "UserId";
+                cmbAssignedUser.DataSource = db.Users.OrderBy(u => u.FullName).ToList();
 
-                // Загружаем приоритеты
-                cmbPriority.DataSource = db.Priorities.ToList();
+                cmbPriority.DataSource = null;
                 cmbPriority.DisplayMember = "PriorityName";
                 cmbPriority.ValueMember = "PriorityId";
+                cmbPriority.DataSource = db.Priorities.OrderBy(p => p.PriorityId).ToList();
 
-                // Загружаем статусы
-                cmbStatus.DataSource = db.Statuses.ToList();
+                cmbStatus.DataSource = null;
                 cmbStatus.DisplayMember = "StatusName";
                 cmbStatus.ValueMember = "StatusId";
+                cmbStatus.DataSource = db.Statuses.OrderBy(s => s.StatusId).ToList();
             }
         }
 
@@ -106,47 +106,106 @@ namespace NETbugTracker.Forms
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtTitle.Text))
+            string title = txtTitle.Text.Trim();
+            string description = txtDescription.Text.Trim();
+            string steps = txtStepsToReproduce.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(title))
             {
-                MessageBox.Show("Введите заголовок бага", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Введите заголовок бага", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (_editingBug == null)
+            if (title.Length > 200)
             {
-                // Новый баг
-                var bug = new Bug
-                {
-                    Title = txtTitle.Text.Trim(),
-                    Description = txtDescription.Text.Trim(),
-                    StepsToReproduce = txtStepsToReproduce.Text.Trim(),
-                    ProjectId = _projectId,
-                    AuthorUserId = _currentUser.UserId,
-                    AssignedUserId = (int)cmbAssignedUser.SelectedValue,
-                    StatusId = (int)cmbStatus.SelectedValue,
-                    PriorityId = (int)cmbPriority.SelectedValue,
-                    CreatedDate = DateTime.Now,
-                    DueDate = chkNoDueDate.Checked ? null : dtpDueDate.Value
-                };
-                _context.Bugs.Add(bug);
-            }
-            else
-            {
-                // Редактирование бага (находим в текущем контексте)
-                var bugToUpdate = _context.Bugs.Find(_editingBug.BugId);
-                if (bugToUpdate != null)
-                {
-                    bugToUpdate.Title = txtTitle.Text.Trim();
-                    bugToUpdate.Description = txtDescription.Text.Trim();
-                    bugToUpdate.StepsToReproduce = txtStepsToReproduce.Text.Trim();
-                    bugToUpdate.AssignedUserId = (int)cmbAssignedUser.SelectedValue;
-                    bugToUpdate.StatusId = (int)cmbStatus.SelectedValue;
-                    bugToUpdate.PriorityId = (int)cmbPriority.SelectedValue;
-                    bugToUpdate.DueDate = chkNoDueDate.Checked ? null : dtpDueDate.Value;
-                }
+                MessageBox.Show("Заголовок бага не может быть длиннее 200 символов",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            _context.SaveChanges();
+            if (cmbAssignedUser.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите исполнителя", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (cmbPriority.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите приоритет", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (cmbStatus.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите статус", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (!chkNoDueDate.Checked && dtpDueDate.Value.Date < DateTime.Today)
+            {
+                var confirm = MessageBox.Show(
+                    "Дедлайн установлен в прошлое. Продолжить?", "Внимание",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (confirm != DialogResult.Yes) return;
+            }
+
+            int assignedId = (int)cmbAssignedUser.SelectedValue;
+            int priorityId = (int)cmbPriority.SelectedValue;
+            int statusId = (int)cmbStatus.SelectedValue;
+
+            try
+            {
+                if (_editingBug == null)
+                {
+                    var bug = new Bug
+                    {
+                        Title = title,
+                        Description = description,
+                        StepsToReproduce = steps,
+                        ProjectId = _projectId,
+                        AuthorUserId = _currentUser.UserId,
+                        AssignedUserId = assignedId,
+                        StatusId = statusId,
+                        PriorityId = priorityId,
+                        CreatedDate = DateTime.Now,
+                        DueDate = chkNoDueDate.Checked ? null : dtpDueDate.Value
+                    };
+                    _context.Bugs.Add(bug);
+                }
+                else
+                {
+                    var bugToUpdate = _context.Bugs.Find(_editingBug.BugId);
+                    if (bugToUpdate == null)
+                    {
+                        MessageBox.Show("Баг уже удалён другим пользователем", "Ошибка",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        this.DialogResult = DialogResult.Cancel;
+                        this.Close();
+                        return;
+                    }
+
+                    bugToUpdate.Title = title;
+                    bugToUpdate.Description = description;
+                    bugToUpdate.StepsToReproduce = steps;
+                    bugToUpdate.AssignedUserId = assignedId;
+                    bugToUpdate.StatusId = statusId;
+                    bugToUpdate.PriorityId = priorityId;
+                    bugToUpdate.DueDate = chkNoDueDate.Checked ? null : dtpDueDate.Value;
+                }
+
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при сохранении: " + ex.Message, "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             this.DialogResult = DialogResult.OK;
             this.Close();
         }

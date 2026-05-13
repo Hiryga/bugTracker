@@ -26,6 +26,18 @@ namespace NETbugTracker.Forms
             _currentUser = currentUser;
             _editingProject = null;
             this.Text = "Новый проект";
+            AcceptButton = btnSave;
+            CancelButton = btnCancel;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _context?.Dispose();
+                components?.Dispose();
+            }
+            base.Dispose(disposing);
         }
 
         // Конструктор для редактирования существующего проекта
@@ -41,34 +53,62 @@ namespace NETbugTracker.Forms
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            // Проверка: название не пустое
-            if (string.IsNullOrWhiteSpace(txtName.Text))
+            string name = txtName.Text.Trim();
+            string description = txtDescription.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
             {
                 MessageBox.Show("Введите название проекта", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (_editingProject == null)
+            if (name.Length > 100)
             {
-                // Создание нового проекта
-                var project = new Project
-                {
-                    Name = txtName.Text.Trim(),
-                    Description = txtDescription.Text.Trim(),
-                    CreatedDate = DateTime.Now,
-                    OwnerUserId = _currentUser.UserId
-                };
-                _context.Projects.Add(project);
-            }
-            else
-            {
-                // Редактирование существующего
-                _editingProject.Name = txtName.Text.Trim();
-                _editingProject.Description = txtDescription.Text.Trim();
-                _context.Projects.Update(_editingProject);
+                MessageBox.Show("Название проекта не может быть длиннее 100 символов",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            _context.SaveChanges();
+            // Уникальность имени проекта
+            int editingProjectId = _editingProject?.ProjectId ?? -1;
+            bool nameTaken = _context.Projects.Any(p =>
+                p.Name == name && p.ProjectId != editingProjectId);
+            if (nameTaken)
+            {
+                MessageBox.Show("Проект с таким названием уже существует",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                if (_editingProject == null)
+                {
+                    var project = new Project
+                    {
+                        Name = name,
+                        Description = description,
+                        CreatedDate = DateTime.Now,
+                        OwnerUserId = _currentUser.UserId
+                    };
+                    _context.Projects.Add(project);
+                }
+                else
+                {
+                    _editingProject.Name = name;
+                    _editingProject.Description = description;
+                    _context.Projects.Update(_editingProject);
+                }
+
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при сохранении: " + ex.Message, "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             this.DialogResult = DialogResult.OK;
             this.Close();
         }

@@ -1,6 +1,5 @@
-using NETbugTracker.Forms;
-using NETbugTracker.Data;
-using NETbugTracker.Entities;
+﻿using NETbugTracker.Forms;
+using NETbugTracker.Services;
 
 namespace NETbugTracker
 {
@@ -11,50 +10,38 @@ namespace NETbugTracker
         {
             ApplicationConfiguration.Initialize();
 
-            using (var db = new AppDbContext())
+            // Гарантируем существование базы данных и наличие стартовых
+            // данных (роли, статусы, приоритеты, учётная запись admin).
+            try
             {
-                var loginForm = new LoginForm();
-                if (loginForm.ShowDialog() == DialogResult.OK)
-                {
-                    var currentUser = loginForm.CurrentUser;
-                    if (currentUser != null)
-                    {
-                        Application.Run(new MainForm(currentUser));
-                    }
-                    else
-                    {
-                        MessageBox.Show("������: ������������ �� ������");
-                        Application.Exit();
-                    }
-                }
-                else
-                {
-                    Application.Exit();
-                }
-
-                // ���������, ���� �� ��� ������������
-                if (!db.Users.Any(u => u.Login == "dev"))
-                {
-                    db.Users.Add(new User
-                    {
-                        Login = "dev",
-                        Password = "dev123",
-                        FullName = "����������� ������",
-                        Email = "dev@example.com",
-                        RoleId = 2  // Developer
-                    });
-                    db.Users.Add(new User
-                    {
-                        Login = "tester",
-                        Password = "tester123",
-                        FullName = "����������� ��������",
-                        Email = "tester@example.com",
-                        RoleId = 3  // Tester
-                    });
-                    db.SaveChanges();
-                }
+                DbInitializer.EnsureCreatedAndSeeded();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Не удалось инициализировать базу данных:\n" + ex.Message,
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
 
+            // Цикл: после выхода из аккаунта в MainForm возвращаемся
+            // к окну авторизации, не завершая процесс.
+            while (true)
+            {
+                using var loginForm = new LoginForm();
+                if (loginForm.ShowDialog() != DialogResult.OK || loginForm.CurrentUser == null)
+                {
+                    return;
+                }
+
+                var mainForm = new MainForm(loginForm.CurrentUser);
+                Application.Run(mainForm);
+
+                if (!mainForm.LogoutRequested)
+                {
+                    return;
+                }
+            }
         }
     }
 }
