@@ -109,17 +109,17 @@ namespace NETbugTracker.Forms
             if (dgvReport.Columns["Group"] != null)
             {
                 dgvReport.Columns["Group"].HeaderText = groupHeader;
-                dgvReport.Columns["Group"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dgvReport.Columns["Group"].FillWeight = 260;
             }
             if (dgvReport.Columns["Count"] != null)
             {
                 dgvReport.Columns["Count"].HeaderText = "Количество";
-                dgvReport.Columns["Count"].Width = 120;
+                dgvReport.Columns["Count"].FillWeight = 90;
             }
             if (dgvReport.Columns["Percent"] != null)
             {
                 dgvReport.Columns["Percent"].HeaderText = "Доля, %";
-                dgvReport.Columns["Percent"].Width = 100;
+                dgvReport.Columns["Percent"].FillWeight = 80;
             }
 
             lblTotal.Text = $"Всего багов: {total}";

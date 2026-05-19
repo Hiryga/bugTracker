@@ -123,31 +123,34 @@ namespace NETbugTracker.Forms
 
             _bugsList = query.OrderBy(b => b.BugId).ToList();
 
+            var view = _bugsList.Select(b => new
+            {
+                ID = b.BugId,
+                Заголовок = b.Title,
+                Исполнитель = b.AssignedUser != null ? b.AssignedUser.FullName : "—",
+                Статус = b.Status != null ? b.Status.StatusName : "—",
+                Приоритет = b.Priority != null ? b.Priority.PriorityName : "—",
+                Создан = b.CreatedDate.ToString("d"),
+                Дедлайн = b.DueDate.HasValue ? b.DueDate.Value.ToString("d") : ""
+            }).ToList();
+
             dgvBugs.DataSource = null;
-            dgvBugs.DataSource = _bugsList;
+            dgvBugs.DataSource = view;
 
-            if (dgvBugs.Columns["BugId"] != null)
-                dgvBugs.Columns["BugId"].HeaderText = "ID";
-            if (dgvBugs.Columns["Title"] != null)
-                dgvBugs.Columns["Title"].HeaderText = "Заголовок";
-            if (dgvBugs.Columns["Status"] != null)
-                dgvBugs.Columns["Status"].HeaderText = "Статус";
-            if (dgvBugs.Columns["Priority"] != null)
-                dgvBugs.Columns["Priority"].HeaderText = "Приоритет";
-            if (dgvBugs.Columns["AssignedUser"] != null)
-                dgvBugs.Columns["AssignedUser"].HeaderText = "Исполнитель";
-
-            var hiddenColumns = new[]
-            {
-                "Description", "StepsToReproduce", "ProjectId",
-                "AuthorUserId", "AuthorUser", "Project", "CreatedDate", "DueDate",
-                "StatusId", "PriorityId", "AssignedUserId", "Comments"
-            };
-            foreach (var col in hiddenColumns)
-            {
-                if (dgvBugs.Columns[col] != null)
-                    dgvBugs.Columns[col].Visible = false;
-            }
+            if (dgvBugs.Columns["ID"] != null)
+                dgvBugs.Columns["ID"].FillWeight = 40;
+            if (dgvBugs.Columns["Заголовок"] != null)
+                dgvBugs.Columns["Заголовок"].FillWeight = 200;
+            if (dgvBugs.Columns["Исполнитель"] != null)
+                dgvBugs.Columns["Исполнитель"].FillWeight = 130;
+            if (dgvBugs.Columns["Статус"] != null)
+                dgvBugs.Columns["Статус"].FillWeight = 90;
+            if (dgvBugs.Columns["Приоритет"] != null)
+                dgvBugs.Columns["Приоритет"].FillWeight = 90;
+            if (dgvBugs.Columns["Создан"] != null)
+                dgvBugs.Columns["Создан"].FillWeight = 80;
+            if (dgvBugs.Columns["Дедлайн"] != null)
+                dgvBugs.Columns["Дедлайн"].FillWeight = 80;
 
             UpdateStats();
         }

@@ -50,14 +50,14 @@ namespace NETbugTracker.Forms
             if (dgvComments.Columns["CommentId"] != null)
             {
                 dgvComments.Columns["CommentId"].HeaderText = "ID";
-                dgvComments.Columns["CommentId"].Width = 60;
+                dgvComments.Columns["CommentId"].FillWeight = 40;
             }
             if (dgvComments.Columns["Автор"] != null)
-                dgvComments.Columns["Автор"].Width = 180;
+                dgvComments.Columns["Автор"].FillWeight = 120;
             if (dgvComments.Columns["Дата"] != null)
-                dgvComments.Columns["Дата"].Width = 140;
+                dgvComments.Columns["Дата"].FillWeight = 100;
             if (dgvComments.Columns["Текст"] != null)
-                dgvComments.Columns["Текст"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dgvComments.Columns["Текст"].FillWeight = 280;
         }
 
         private Comment? GetSelectedComment()
