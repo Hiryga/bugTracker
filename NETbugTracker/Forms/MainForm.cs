@@ -90,67 +90,6 @@ namespace NETbugTracker.Forms
                 dgvProjects.ClearSelection();
                 dgvProjects.Rows[0].Selected = true;
                 LoadBugs(_projectsList[0].ProjectId);
-<<<<<<< HEAD
-            }
-            else
-            {
-                _bugsList.Clear();
-                dgvBugs.DataSource = null;
-                UpdateStats();
-            }
-        }
-
-        private void LoadBugs(int projectId, int? statusId = null, int? priorityId = null, int? assignedUserId = null, string searchTitle = "")
-        {
-            using (var db = new AppDbContext())
-            {
-                var query = db.Bugs
-                    .Include(b => b.Status)
-                    .Include(b => b.Priority)
-                    .Include(b => b.AssignedUser)
-                    .Where(b => b.ProjectId == projectId);
-
-                // Фильтры (оставляем как есть)
-                if (statusId.HasValue && statusId.Value > 0)
-                    query = query.Where(b => b.StatusId == statusId.Value);
-                if (priorityId.HasValue && priorityId.Value > 0)
-                    query = query.Where(b => b.PriorityId == priorityId.Value);
-                if (assignedUserId.HasValue && assignedUserId.Value > 0)
-                    query = query.Where(b => b.AssignedUserId == assignedUserId.Value);
-                if (!string.IsNullOrWhiteSpace(searchTitle))
-                    query = query.Where(b => b.Title.Contains(searchTitle));
-
-                // ПРОЕЦИРОВАНИЕ: превращаем объекты в строки для отображения
-                var displayList = query.Select(b => new
-                {
-                    b.BugId,
-                    b.Title,
-                    Исполнитель = b.AssignedUser != null ? b.AssignedUser.FullName : "—",
-                    Статус = b.Status != null ? b.Status.StatusName : "—",
-                    Приоритет = b.Priority != null ? b.Priority.PriorityName : "—"
-                }).ToList();
-
-                dgvBugs.DataSource = null;
-                dgvBugs.DataSource = displayList;
-
-                // Настройка колонок (теперь они называются как в анонимном типе)
-                if (dgvBugs.Columns["BugId"] != null)
-                    dgvBugs.Columns["BugId"].HeaderText = "ID";
-                if (dgvBugs.Columns["Title"] != null)
-                    dgvBugs.Columns["Title"].HeaderText = "Заголовок";
-                if (dgvBugs.Columns["Исполнитель"] != null)
-                    dgvBugs.Columns["Исполнитель"].HeaderText = "Исполнитель";
-                if (dgvBugs.Columns["Статус"] != null)
-                    dgvBugs.Columns["Статус"].HeaderText = "Статус";
-                if (dgvBugs.Columns["Приоритет"] != null)
-                    dgvBugs.Columns["Приоритет"].HeaderText = "Приоритет";
-
-                // Сохраняем полные объекты в отдельный список для редактирования
-                _bugsList = query.ToList();
-            }
-        }
-
-=======
             }
             else
             {
@@ -184,36 +123,38 @@ namespace NETbugTracker.Forms
 
             _bugsList = query.OrderBy(b => b.BugId).ToList();
 
+            var view = _bugsList.Select(b => new
+            {
+                ID = b.BugId,
+                Заголовок = b.Title,
+                Исполнитель = b.AssignedUser != null ? b.AssignedUser.FullName : "—",
+                Статус = b.Status != null ? b.Status.StatusName : "—",
+                Приоритет = b.Priority != null ? b.Priority.PriorityName : "—",
+                Создан = b.CreatedDate.ToString("d"),
+                Дедлайн = b.DueDate.HasValue ? b.DueDate.Value.ToString("d") : ""
+            }).ToList();
+
             dgvBugs.DataSource = null;
-            dgvBugs.DataSource = _bugsList;
+            dgvBugs.DataSource = view;
 
-            if (dgvBugs.Columns["BugId"] != null)
-                dgvBugs.Columns["BugId"].HeaderText = "ID";
-            if (dgvBugs.Columns["Title"] != null)
-                dgvBugs.Columns["Title"].HeaderText = "Заголовок";
-            if (dgvBugs.Columns["Status"] != null)
-                dgvBugs.Columns["Status"].HeaderText = "Статус";
-            if (dgvBugs.Columns["Priority"] != null)
-                dgvBugs.Columns["Priority"].HeaderText = "Приоритет";
-            if (dgvBugs.Columns["AssignedUser"] != null)
-                dgvBugs.Columns["AssignedUser"].HeaderText = "Исполнитель";
-
-            var hiddenColumns = new[]
-            {
-                "Description", "StepsToReproduce", "ProjectId",
-                "AuthorUserId", "AuthorUser", "Project", "CreatedDate", "DueDate",
-                "StatusId", "PriorityId", "AssignedUserId", "Comments"
-            };
-            foreach (var col in hiddenColumns)
-            {
-                if (dgvBugs.Columns[col] != null)
-                    dgvBugs.Columns[col].Visible = false;
-            }
+            if (dgvBugs.Columns["ID"] != null)
+                dgvBugs.Columns["ID"].FillWeight = 40;
+            if (dgvBugs.Columns["Заголовок"] != null)
+                dgvBugs.Columns["Заголовок"].FillWeight = 200;
+            if (dgvBugs.Columns["Исполнитель"] != null)
+                dgvBugs.Columns["Исполнитель"].FillWeight = 130;
+            if (dgvBugs.Columns["Статус"] != null)
+                dgvBugs.Columns["Статус"].FillWeight = 90;
+            if (dgvBugs.Columns["Приоритет"] != null)
+                dgvBugs.Columns["Приоритет"].FillWeight = 90;
+            if (dgvBugs.Columns["Создан"] != null)
+                dgvBugs.Columns["Создан"].FillWeight = 80;
+            if (dgvBugs.Columns["Дедлайн"] != null)
+                dgvBugs.Columns["Дедлайн"].FillWeight = 80;
 
             UpdateStats();
         }
 
->>>>>>> b8f2ddb196baeb74a2016175cdee6b5ef8f9368c
         private void LoadFilterComboBoxes()
         {
             using var db = new AppDbContext();

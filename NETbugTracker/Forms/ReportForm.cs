@@ -109,25 +109,17 @@ namespace NETbugTracker.Forms
             if (dgvReport.Columns["Group"] != null)
             {
                 dgvReport.Columns["Group"].HeaderText = groupHeader;
-                dgvReport.Columns["Group"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dgvReport.Columns["Group"].FillWeight = 260;
             }
             if (dgvReport.Columns["Count"] != null)
             {
                 dgvReport.Columns["Count"].HeaderText = "Количество";
-<<<<<<< HEAD
-                dgvReport.Columns["Count"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-=======
-                dgvReport.Columns["Count"].Width = 120;
->>>>>>> b8f2ddb196baeb74a2016175cdee6b5ef8f9368c
+                dgvReport.Columns["Count"].FillWeight = 90;
             }
             if (dgvReport.Columns["Percent"] != null)
             {
                 dgvReport.Columns["Percent"].HeaderText = "Доля, %";
-<<<<<<< HEAD
-                dgvReport.Columns["Percent"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-=======
-                dgvReport.Columns["Percent"].Width = 100;
->>>>>>> b8f2ddb196baeb74a2016175cdee6b5ef8f9368c
+                dgvReport.Columns["Percent"].FillWeight = 80;
             }
 
             lblTotal.Text = $"Всего багов: {total}";

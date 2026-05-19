@@ -44,26 +44,19 @@ namespace NETbugTracker.Forms
             if (dgvLog.Columns["LogId"] != null)
             {
                 dgvLog.Columns["LogId"].HeaderText = "ID";
-<<<<<<< HEAD
+                dgvLog.Columns["LogId"].FillWeight = 40;
             }
+            if (dgvLog.Columns["Дата"] != null) dgvLog.Columns["Дата"].FillWeight = 100;
+            if (dgvLog.Columns["Пользователь"] != null) dgvLog.Columns["Пользователь"].FillWeight = 100;
+            if (dgvLog.Columns["Действие"] != null) dgvLog.Columns["Действие"].FillWeight = 80;
+            if (dgvLog.Columns["Объект"] != null) dgvLog.Columns["Объект"].FillWeight = 80;
             if (dgvLog.Columns["ID_объекта"] != null)
             {
                 dgvLog.Columns["ID_объекта"].HeaderText = "ID объекта";
-=======
-                dgvLog.Columns["LogId"].Width = 60;
-            }
-            if (dgvLog.Columns["Дата"] != null) dgvLog.Columns["Дата"].Width = 140;
-            if (dgvLog.Columns["Пользователь"] != null) dgvLog.Columns["Пользователь"].Width = 140;
-            if (dgvLog.Columns["Действие"] != null) dgvLog.Columns["Действие"].Width = 110;
-            if (dgvLog.Columns["Объект"] != null) dgvLog.Columns["Объект"].Width = 110;
-            if (dgvLog.Columns["ID_объекта"] != null)
-            {
-                dgvLog.Columns["ID_объекта"].HeaderText = "ID объекта";
-                dgvLog.Columns["ID_объекта"].Width = 90;
->>>>>>> b8f2ddb196baeb74a2016175cdee6b5ef8f9368c
+                dgvLog.Columns["ID_объекта"].FillWeight = 60;
             }
             if (dgvLog.Columns["Описание"] != null)
-                dgvLog.Columns["Описание"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dgvLog.Columns["Описание"].FillWeight = 240;
 
             lblTotal.Text = $"Записей показано: {view.Count} (максимум {MaxRows})";
         }
